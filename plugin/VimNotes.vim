@@ -1,7 +1,7 @@
 " ------------------------------------------------------------------------------
 " Filename:      ~/.vim/plugin/VimNotes.vim
 " VimScript:
-" Last Modified: 25 Nov 2003 06:50:15 PM by Dave Vehrs
+" Last Modified: 30 Nov 2003 03:15:29 PM by Dave Vehrs
 " Maintainer:    Dave Vehrs (davev at ziplip.com)
 " Description:   VimNotes helps organize a collection of notes.
 " Copyright:     (C) 2003 Dave Vehrs
@@ -18,24 +18,40 @@ let g:loaded_vimnotes=1
 " ------------------------------------------------------------------------------
 " Configuration:                                                             {{{
 
-" Default Notes Directory:
+" Default Headerstrings
+if (!exists("g:VN_modifiedstring"))
+    let g:VN_modifiedstring = "Modified"
+endif
+if (!exists("g:VN_createdstring"))
+    let g:VN_createdstring = "Created"
+endif
+if (!exists("g:VN_filenamestring"))
+    let g:VN_filenamestring = "Filename"
+endif
+
+" Default Dateformat
+if (!exists("g:VN_DateFormat"))
+    let g:VN_DateFormat = "%d %b %Y %X"
+endif
+
+" Default Notes Directory
 if (!exists("g:VN_DefaultDir"))
   let g:VN_DefaultDir = "~/Notes"
 endif
 
-" Folds Enabled:    ("0" to disable)
+" Folds Enabled    ("0" to disable)
 if (!exists("g:VN_FoldEnable"))
   let g:VN_FoldEnable = "1"
 endif
 
-" Note Header Configuration:
+" Note Header Configuration
 " The default ("d") header will include filename, created date and last
 " modified date and by whom.  Or you can use a minimalist ("m") header.
 if (!exists("g:VN_Header"))
   let g:VN_Header = "d"
 endif
 
-" Note Section Divider:
+" Note Section Divider
 " Setting this to "1" will place a divider line of ---- between note sections.
 " Setting it to "0", will disable a visible seperater but folding will still
 " work on section breaks.
@@ -43,7 +59,7 @@ if (!exists("g:VN_SectionSep"))
   let g:VN_SectionSep = "1"
 endif
 
-" Default Web Browser:
+" Default Web Browser
 if (!exists("g:VN_DefaultBrowser"))
   "let g:VN_DefaultBrowser = "konqueror"
   let g:VN_DefaultBrowser = "links -g"
@@ -53,7 +69,7 @@ if (!exists("g:VN_DefaultBrowser"))
 endif
 
 
-" Keymappings:
+" Keymappings
 " If you would like to change any of the keymappings for this script,
 " add the following lines:
 "                map <-key-to-use> <PLUG><-function-to-map>
@@ -128,9 +144,11 @@ function! <SID>VN_ConsoleMenuGen()
 		endif
     setfiletype VimNoteIndex
     " Get tags from tags file.
-    if (!filereadable("tags"))
+    let l:notesfound = glob('*.txt')
+    if (!filereadable("tags")) && l:notesfound != ''
       execute "helptags ". expand("%:p:h")
     endif
+    unlet l:notesfound
     execute "read ".l:directory."/tags"
     execute ':1,$ substitute /*.*$//'
     execute ':1,$ substitute ./$..'
@@ -183,7 +201,7 @@ function! VN_Folds()
   else
     return "="
   endif
-endfunction
+endfunction 
 
 " VN_FoldText: Custom text for folds
 function! VN_FoldText()
@@ -319,15 +337,16 @@ endfunction
 
 " VN_NewNoteFile:  Create new note with header, etc.
 function!  <SID>VN_NewNoteFile()
-  let l:text_width = &textwidth
   if (&filetype == "VimNote") | let l:directory = expand("%:p:h")
   else        | let l:directory = expand(expand(g:VN_DefaultDir))
   endif
   call inputsave()
   let l:filename = input("New VimNote Filename (w/o .txt):")
   call inputrestore()
-  execute "normal: new\<CR>"
+  new
   setfiletype VimNote
+  call s:VN_Options()
+  let l:text_width = &textwidth
   " Create header top line as wide as configured textwidth
   let l:topline = "-"
   while (strlen(l:topline) < l:text_width - 8)
@@ -335,13 +354,13 @@ function!  <SID>VN_NewNoteFile()
   endwhile
   let l:topline = l:topline . " VimNote"
   " Set date
-  let l:today = strftime("%d %b %Y %X")
+  let l:today = strftime(g:VN_DateFormat)
   " Set divider
   let l:divline = "-"
   while (strlen(l:divline) < l:text_width)
     let l:divline = l:divline . "-"
   endwhile
-  " Set first index line
+  " Set first index line | 
   let l:idxline = l:filename .": "
   while (strlen(l:idxline) < (l:text_width - (strlen(l:filename) + 2)))
     let l:idxline = l:idxline . " "
@@ -354,20 +373,23 @@ function!  <SID>VN_NewNoteFile()
   endwhile
   let l:linkline = l:linkline . "|" . l:filename . "|"
   " Insert header (created from bottom to top)
-  silent put  =l:divline
-  silent put  =l:linkline
+  silent put!  =l:divline
+  silent put!  =l:linkline
   let l:loop = 1
-  while (l:loop < 10) | silent put  "") | let l:loop = l:loop + 1 | endwhile
+  while (l:loop < 3) 
+      silent put!  _"
+      let l:loop = l:loop + 1
+  endwhile
   if (g:VN_Header == "d")
-    silent put =l:idxline
-    silent put =l:divline
-    silent put ="Modified: " . l:today
-    silent put ="Created: " . l:today
-    silent put ="Filename: " . l:filename
+    silent put! =l:idxline
+    silent put! =l:divline
+    silent put! =g:VN_modifiedstring . ': ' . l:today
+    silent put! =g:VN_createdstring  . ': ' . l:today
+    silent put! =g:VN_filenamestring . ': ' . l:filename
   else
-    silent put =l:idxline
+    silent put! =l:idxline
   endif
-  silent put =l:topline
+  silent put! =l:topline
   execute "write ". g:VN_DefaultDir . "/" . l:filename . ".txt"
   setlocal nofoldenable
 endfunction
@@ -381,11 +403,18 @@ function! <SID>VN_NewNoteSection()
     let l:divline = l:divline . "-"
   endwhile
   " Set New Index line
-  let l:newsect = "New Section: "
-  while (strlen(l:newsect) < l:text_width - 12)
+  call inputsave()
+  let l:newsect = input("New VimNote Section: ")
+  call inputrestore()
+  if l:newsect == ''
+    let l:newsect = "New Section:"
+  endif
+  let l:newsectstar = substitute(l:newsect,'\s','','g')
+  let l:newsectstar = '*' . substitute(l:newsectstar,':','','g') . '*'
+  while (strlen(l:newsect) < l:text_width - strlen(l:newsectstar))
     let l:newsect = l:newsect . " "
   endwhile
-  let l:newsect = l:newsect . "*NewSection*"
+  let l:newsect = l:newsect . l:newsectstar 
   let l:currline = line(".")
   let l:testline = getline(l:currline)
   let l:postline = getline(l:currline + 1)
@@ -395,7 +424,8 @@ function! <SID>VN_NewNoteSection()
     let l:testline = getline(l:currline)
     let l:postline = getline(l:currline + 1)
   endwhile
-  if (l:currline == line("$")) | return | endif
+  " What's this for??
+"  if (l:currline == line("$")) | return | endif
   if (g:VN_SectionSep == "0")
     call append(l:currline, l:newsect)
     call append(l:currline + 1, "")
@@ -456,7 +486,7 @@ function! <SID>VN_Options()
   setlocal noswapfile
   setlocal shortmess=atTW
   setlocal tabstop=2
-  setlocal textwidth=60
+  setlocal textwidth=80
   if (has("GUI")) | execute <SID>VN_MenuGen() | endif
   " Load keymappings
   execute s:VN_Keys()   
@@ -503,19 +533,24 @@ endfunction
 " VN_PreSave: Update the header before saving
 function! <SID>VN_PreSave()
   if (&filetype == "VimNote")
-    if line("$") > 6 | let l:line_end = 6
-    else              | let l:line_end = line("$")
+    if line("$") > 6
+        let l:line_end = 6
+    else
+        let l:line_end = line("$")
     endif
-    let l:today = strftime("%d %b %Y %X")
+    let l:today = strftime(g:VN_DateFormat)
     let l:username = s:VN_User()
     if (l:username != "")
-      execute ':1,' . l:line_end . 's/Modified: .*/Modified: ' . l:today .
-            \ ' by ' . l:username . '/'
+      execute ':1,' . l:line_end . 's/' . g:VN_modifiedstring . 
+            \ ': .*/' . g:VN_modifiedstring . ': ' . l:today .
+            \ ' by ' . l:username . '/e'
     else
-      execute ':1,' . l:line_end . 's/Modified: .*/Modified: ' . l:today . '/'
+      execute ':1,' . l:line_end . 's/' . g:VN_modifiedstring . 
+            \ ': .*/' . g:VN_modifiedstring . ': ' . l:today . '/e'
     endif
-    execute ':1,' . l:line_end . 's/Filename: .*/Filename: ' .
-          \ expand("%:p:t") . '/'
+    execute ':1,' . l:line_end . 's/' . g:VN_filenamestring . 
+            \ ': .*/' . g:VN_filenamestring . ': ' .
+            \ expand("%:p:t") . '/e'
   endif
 endfunction
 
@@ -531,11 +566,17 @@ endfunction
 function! s:VN_ProcTFM(directory,menustr,menudepth)
   let l:filename = a:directory . "/tags"
   let l:menu_cmd = a:menustr
-  if !filereadable(l:filename)
+  let l:notesfound = glob(expand(expand(a:directory)) . '/.txt')
+  if !filereadable(l:filename) && l:notesfound != ''
     execute "helptags ". a:directory
   endif
+  unlet l:notesfound
   " Need to replace this system call.
-  let l:text = system("cat " . l:filename)
+  if !has("win32")
+    let l:text = system("cat " . l:filename)
+  else
+    let l:text = system("type " . l:filename)
+  endif
   if (l:text == '') | return | endif
   let l:counter = 0
   while (l:text != '')
@@ -551,7 +592,7 @@ function! s:VN_ProcTFM(directory,menustr,menudepth)
     let l:counter = l:counter + 1
   endwhile
   return
-endfunction
+endfunction 
 
 " VN_SearchP: Prompts for search target and runs the search
 " Note: Currently limited to 1 keyword per search
@@ -621,8 +662,10 @@ endfunction
 " VN_User: Determine user name for VN_UpdateTS
 function! s:VN_User()
   let l:user = ""
+  if ($USER != '')
+      let l:user = $USER
+  endif
   if (has("unix"))
-    let l:user = $USER
     if (filereadable("/etc/passwd"))
       let l:temp = strtrans(system("grep ".l:user." /etc/passwd | ".
         \ "cut -d : -f 5"))
@@ -633,7 +676,7 @@ function! s:VN_User()
  	return l:user
 endfunction
 
-"                                                                            }}}
+"                                                                             }}}
 " ------------------------------------------------------------------------------
 " Misc.                                                                      {{{
 
@@ -648,6 +691,10 @@ execute s:VN_Plugs()
 " Version History:                                                           {{{
 " 0.1    Nov 21 2003  Initial Release.
 " 0.2    Nov 25 2003  Console tag menui(F6).
+" 0.2.5  Nov 30 2003  Patches submited by Ronald Hoellwarth including modifiable 
+"                     file headerstrings and date format, Win32 support added to 
+"                     the VN_ProcTFM function and many vim syntax improvements &
+"                     corrections.  Many Thanks.
 "                                                                            }}}
 " ------------------------------------------------------------------------------
 " vim:tw=80:ts=2:ft=vim:norl:
