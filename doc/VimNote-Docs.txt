@@ -1,0 +1,245 @@
+------------------------------------------------------------------------ VimNote
+Filename: VimNote-spec.txt
+Created: 30 Dec 2002 10:15:00 PM
+Modified: 22 Nov 2003 05:58:12 PM by Dave Vehrs
+
+--------------------------------------------------------------------------------
+VimNotes Project:                                                   *VN_Project*
+
+Index:
+|VN_Configuration|      VimNotes Configuration
+|VN_FileHeader|         VimNotes File Header Format
+|VN_Folding|            Folding and VimNotes
+|VN_Link_Format|        Vim Link Format
+|VN_Tab_Completion|     Tab Completion in VimNotes
+|VN_Vim_FileType|       Vim - Set filetype automatically
+|VN_TODO|               VimNotes Project Todo List
+
+Idea: A collection of hacks to make a simple note tool.
+
+Storage: Store all related notes together in a single file, then store the files
+in one directory.
+
+                                                                      |VN_Index|
+--------------------------------------------------------------------------------
+VimNotes Configuration:                                       *VN_Configuration*
+
+VimNotes has a few configuration options at the top of the VimNotes.vim file.
+You should review these and make any desired changes.
+
+Default Notes Directory:         
+by default all notes are kept in a single directory.
+
+  let g:VN_DefaultDir = "~/Notes"
+
+Folds:
+VimNotes can be configured to fold note subsections (1) or not (0)
+(See |VN_Folding|). 
+
+  let g:VN_FoldEnable = "1"
+
+
+Note Header Configuration:
+The default ("d") header will include filename, created date and last
+modified date and by whom.  Or you can use a minimalist ("m") header
+(See |VN_FileHeader|).
+
+  let g:VN_Header = "d"
+
+Note Section Divider:
+Setting this to "1" will place a divider line of ---- between note sections.
+Setting it to "0", will disable a visible seperater.
+  let g:VN_SectionSep = "1"
+
+Default Web Browser:
+VimNotes can open links in a browser of your choosing.
+Examples: 
+  let g:VN_DefaultBrowser = "konqueror"
+  let g:VN_DefaultBrowser = "links -g"
+  let g:VN_DefaultBrowser = "konsole -e lynx"
+  let g:VN_DefaultBrowser = "xterm -e lynx"
+  let g:VN_DefaultBrowser = "mozilla"
+
+
+Keymappings:
+If you would like to change any of the keymappings for this script,
+add the following lines:
+               map <-key-to-use> <PLUG><-function-to-map>
+               map! <-key-to-use> <PLUG><-function-to-map>
+Currently the following functions require keymappings:
+Default Config:
+               VN_Search               <F2>
+               VN_NewFile              <F3>
+               VN_NewSection           <F4>
+               VN_OpenHTTPLink         <F5>
+ Example:
+               map  <F1> <Plug>VN_Search
+               map! <F1> <Plug>VN_Search
+
+Customizing Syntax Colors:
+  You can link the group to an existing syntax group with this command:
+       highlight link <vimnotes-group>  <group>
+  You can find the available group names in your current syntax file:
+       /usr/local/share/vim/vim62/colors/
+Default Config:
+               highlight link VN_Bullet          Comment
+               highlight link VN_Checkbox        Function
+               highlight link VN_CheckboxDone    Comment
+               highlight link VN_HyperTextJump   Function
+               highlight link VN_HyperTextEntry  Identifier
+               highlight link VN_Divider         Comment
+               highlight link VN_Header          Comment
+               highlight link VN_HeaderTopic     Function
+               highlight link VN_HTTP            String
+               highlight link VN_NumberedList    Comment
+               highlight link VN_Topic           Comment
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+VimNotes File Header:                                            *VN_FileHeader*
+
+Default Example: 
+    --------------------------------------------------- VimNote
+    Filename: filename 
+    Created: <date> 
+    Modified: <date> by whom.
+    ----------------------------------------------------------- 
+    Example Topic:                               *Example_Link*
+
+Minimalist Example: 
+    --------------------------------------------------- VimNote
+    Example Topic 2:                            *Example_Link2*
+
+  First line is used like #!/bin/sh is used to identify shell scripts, it will
+  set the filetype (which triggers all the other automatic configurations).  The
+  first line is also the only required line in the header and can be immediately
+  followed by the first link as demonstrated in the Minimalist setting.
+
+  In the default config, the Filename and Modified fields will be automatically
+  updated with each file save.  Modified is also tagged with "by whom" for GNU
+  and Unix systems currently.  The Created field is set when the file is first
+  created.  Additionally in the default config there will always be a dashed
+  divider line between the header and the first link, even if SectionSep is
+  disabled.
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+VimNotes Subsection Format:                                   *VN_SubSectFormat*
+
+Vimnote subsctions are designated by a leading section label and a trailing link
+back to the Note index.
+
+The label uses the following format:
+  Plain english title                              *example_link_to_title*
+
+Additionally you can configure VimNotes to seperate subsections with a bar of
+"-" characters if you wish.
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+Folding and VimNotes:                                               *VN_Folding*
+
+VimNotes sets folds based on the following markers:
+  - Note Subsections:
+  - In-file Index sections:
+  - Fold Markers:
+    Increase or decrease the fold level by 1 when these markers are found.
+    Examples: 
+             {{{             Increase one fold level.
+             }}}             Decrease one fold level.
+  - Setting a specific fold level for a section:
+    Add the desired fold level to the end of the fold Markers.
+    Examples:
+             {{{3            Set fold level to 3.
+             }}}3            Close fold level 3.
+            
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+Vim Link Format:                                                *VN_Link_Format*
+
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+Searching VimNotes:                                                  *VN_Search*
+
+In the default configuration, pressing <F4> will open a search input prompt.
+Searches are currently limited to looking for a single keyword at a time.
+Keywords can be any string that occurs in one of the VimNotes files.
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+Tab Completion in VimNotes:                                  *VN_Tab_Completion*
+
+To enable Tab Completion in Vim, I recommended that you download and install
+Gergely Kontra's SuperTab.vim script.
+
+http://vim.sourceforge.net/scripts/script.php?script_id=182
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+TODO:                                                                  *VN_TODO*
+
+- Autocommands:
+  - BUFFER READ  - Updates Filename and other note variables if necessary    [X]
+  - BUFFER WRITE - detects if files are VimNotes and saves appropriately     [X]
+  - FILETYPE     - Set VimNotes Options                                      [X]
+  - SYNTAX       - Set syntax highlighting                                   [X]
+- Display:
+  - Colorscheme
+    - Built in, no extra files                                               [X]
+    - Try to use hl link whenever possible to items in the default 
+      colorscheme                                                            [X]
+- Documentation:
+  - Document configurable settings                                           [X]
+  - Document                                                                 [ ]
+  - Document formating rules                                                 [ ]
+  - Document                                                                 [ ]
+- Encryption:
+  - Integrate with GnuPG to allow for ASCII-armored enchipered notes 
+    and note subsections                                                     [ ]
+- Environment:
+  - g:VN_DefaultDir defaults to the directory of the current note file
+    being editted.                                                           [X]
+  - Add button or command to open VimNotes Indexes in a pre-defined 
+    default directory                                                        [X]
+  - Make it possible to add many button-directory combinations.              [ ]
+- File format:
+  - Header                                                                   [X]
+    - Requirements.
+      - ID file as VimNote                                                   [X]
+      - Filename for reference                                               [X]
+      - Date created and last modified for tracking.                         [X]
+    - Filename, and modified date should autoupdate with each save, 
+      maybe check filename at buffer load as well                            [X]
+  - Filetype
+    - Set Filetype=VimNote                                                   [X]
+    - Find way to add VimNote as recognized filetype when script is loaded   [X]
+- File handling functions:
+  - Open                                                                     [X]
+  - Save file                                                                [X]
+  - Create new files with header                                             [X]
+  - Create new note sections                                                 [X]
+- File folding:
+  - Fold note subsections on section header                                  [X]
+  - Fold Markers with Fold Level                                             [X]
+  - Fold Markers without Fold Level                                          [X]
+- Indexes:
+  - Internal to File
+    - Use Vims internal tag format to create hyperlinks in the documents     [X]
+  - Cwindow or other buffer window list                                      [ ]
+    - Read tags file and format output                                       [ ]
+    - Links working                                                          [ ]
+    - Sort functions                                                         [ ]
+  - Menu list in GVIM                                                        [X]
+    - Sort Options                                                           [ ]
+  - Update indexes on file save                                              [X]
+- Searching:
+  - Add ability to grep all Notes files                                      [X]
+- Rewrite helptags functionality:
+  - Eliminate the need for .txt file extentions                              [ ]
+  - Recursively scan subdirectories                                          [ ]
+  - Make GVim Menu and Buffer window lists show the directory structure      [ ]
+
+                                                                    |VN_Project|
+--------------------------------------------------------------------------------
+" vim:tw=80:
