@@ -1,0 +1,82 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=828
+
+This is a simple script that helps keep a collection of notes organized and allows vim help style linking. 
+
+VimNotes will:
+1.  Automatically create an Index of links and display it in a Menu in Gvim.
+2.  Tag file is automatically regenerated every time a VimNote is saved.
+3.  
+
+VimNotes Configuration:  
+
+VimNotes has a few configuration options at the top of the VimNotes.vim file.
+You should review these and make any desired changes.
+
+Default Notes Directory:         
+by default all notes are kept in a single directory.
+
+  let g:VN_DefaultDir = "~/Notes"
+
+Folds:
+VimNotes can be configured to fold note subsections (1) or not (0)
+
+  let g:VN_FoldEnable = "1"
+
+
+Note Header Configuration:
+The default ("d") header will include filename, created date and last
+modified date and by whom.  Or you can use a minimalist ("m") header.
+
+  let g:VN_Header = "d"
+
+Note Section Divider:
+Setting this to "1" will place a divider line of ---- between note sections.
+Setting it to "0", will disable a visible seperater.
+  let g:VN_SectionSep = "1"
+
+Default Web Browser:
+VimNotes can open links in a browser of your choosing.
+Examples: 
+  let g:VN_DefaultBrowser = "konqueror"
+  let g:VN_DefaultBrowser = "links -g"
+  let g:VN_DefaultBrowser = "konsole -e lynx"
+  let g:VN_DefaultBrowser = "xterm -e lynx"
+  let g:VN_DefaultBrowser = "mozilla"
+
+Keymappings:
+If you would like to change any of the keymappings for this script,
+add the following lines:
+               map <-key-to-use> <PLUG><-function-to-map>
+               map! <-key-to-use> <PLUG><-function-to-map>
+Default Config:
+               VN_NewFile                    <F2>
+               VN_NewSection              <F3>
+               VN_Search                     <F4>
+               VN_OpenHTTPLink         <F5>
+      Note: VN_NewFile is always available, however VN_NewSection, 
+               VN_Search, and VN_OpenHTTPLink are only available if the
+               current buffer is a VimNote.
+
+ Example:
+               map  <F1> <Plug>VN_Search
+               map! <F1> <Plug>VN_Search
+
+Customizing Syntax Colors:
+  You can link the group to an existing syntax group with this command:
+       highlight link <vimnotes-group>  <group>
+  You can find the available group names in your current syntax file:
+       /usr/local/share/vim/vim62/colors/
+Default Config:
+               highlight link VN_Bullet          Comment
+               highlight link VN_Checkbox        Function
+               highlight link VN_CheckboxDone    Comment
+               highlight link VN_HyperTextJump   Function
+               highlight link VN_HyperTextEntry  Identifier
+               highlight link VN_Divider         Comment
+               highlight link VN_Header          Comment
+               highlight link VN_HeaderTopic     Function
+               highlight link VN_HTTP            String
+               highlight link VN_NumberedList    Comment
+               highlight link VN_Topic           Comment
+
+
