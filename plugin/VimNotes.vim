@@ -1,7 +1,7 @@
 " ------------------------------------------------------------------------------
 " Filename:      ~/.vim/plugin/VimNotes.vim
 " VimScript:
-" Last Modified: 30 Nov 2003 03:15:29 PM by Dave Vehrs
+" Last Modified: 01 Jun 2004 19:09:04 by Dave Vehrs
 " Maintainer:    Dave Vehrs (davev at ziplip.com)
 " Description:   VimNotes helps organize a collection of notes.
 " Copyright:     (C) 2003 Dave Vehrs
@@ -326,13 +326,11 @@ endfunction
 " VN_MenuGen: Generate menu items for GVIM
 function! <SID>VN_MenuGen()
   let l:menu_str = "menu <silent> 9009."
-  execute l:menu_str . "100 VimNotes.Refresh   :call <SID>VN_MenuGen()<CR>"
-  execute l:menu_str . "200 VimNotes.-sep-     :"
+  execute l:menu_str . "100 VimNotes.-sep-     :"
   if (&filetype == "VimNote") | let l:directory = expand("%:p:h")
   else        | let l:directory = expand(expand(g:VN_DefaultDir))
   endif
   call s:VN_ProcTFM(l:directory,l:menu_str,"300")
-  execute l:menu_str . "9999 VimNotes.-sep-     :"
 endfunction
 
 " VN_NewNoteFile:  Create new note with header, etc.
@@ -564,21 +562,28 @@ endfunction
 
 " VN_ProcTFM: Process Tag file for menu.
 function! s:VN_ProcTFM(directory,menustr,menudepth)
-  let l:filename = a:directory . "/tags"
+  let l:filename = g:VN_DefaultDir . "/tags"
   let l:menu_cmd = a:menustr
-  let l:notesfound = glob(expand(expand(a:directory)) . '/.txt')
+  if !has("win32")
+    let l:notesfound = glob(expand(expand(g:VN_DefaultDir)) . '/.txt')
+  else
+    let l:tmpdirectory = substitute(g:VN_DefaultDir, "\/", "\\\\", "g")
+    let l:notesfound = glob(expand(expand(l:tmpdirectory)) . '/*.txt')
+  endif
   if !filereadable(l:filename) && l:notesfound != ''
-    execute "helptags ". a:directory
+    execute "helptags ". g:VN_DefaultDir
   endif
   unlet l:notesfound
   " Need to replace this system call.
   if !has("win32")
     let l:text = system("cat " . l:filename)
   else
+    let l:filename = substitute(l:filename, "\/", "\\\\", "g")
     let l:text = system("type " . l:filename)
   endif
   if (l:text == '') | return | endif
   let l:counter = 0
+  execute "aunmenu <silent> VimNotes"
   while (l:text != '')
     let l:line = strpart(l:text, 0, stridx(l:text, "\n"))
     let l:tag = substitute(l:line, '\s\S\+\s\S\+\s*$', '', 'g')
@@ -586,7 +591,7 @@ function! s:VN_ProcTFM(directory,menustr,menudepth)
     let l:fname = substitute(l:fname, '\s\+\S\+\s*$', '', 'g')
     let l:sfname = substitute(l:fname,'\.txt', '', 'g')
     execute l:menu_cmd . a:menudepth . " VimNotes." . l:sfname . "." . l:tag .
-      \ " :edit " . a:directory . "/" . l:fname . " \\| tag " . l:tag .
+      \ " :edit " . g:VN_DefaultDir . "/" . l:fname . " \\| tag " . l:tag .
       \ " \\| silent! foldopen<CR>"
     let l:text = strpart(l:text, stridx(l:text, "\n" ) + 1)
     let l:counter = l:counter + 1
@@ -690,11 +695,13 @@ execute s:VN_Plugs()
 " ------------------------------------------------------------------------------
 " Version History:                                                           {{{
 " 0.1    Nov 21 2003  Initial Release.
-" 0.2    Nov 25 2003  Console tag menui(F6).
+" 0.2    Nov 25 2003  Console tag menu(F6).
 " 0.2.5  Nov 30 2003  Patches submited by Ronald Hoellwarth including modifiable 
 "                     file headerstrings and date format, Win32 support added to 
 "                     the VN_ProcTFM function and many vim syntax improvements &
 "                     corrections.  Many Thanks.
+" 0.2.6  Jun 02 2004  Patches submitted by Richard Bair including Win32 &
+"                     glob fixes, and Gvim menu cleanups.  Many Thanks.                
 "                                                                            }}}
 " ------------------------------------------------------------------------------
 " vim:tw=80:ts=2:ft=vim:norl:
